@@ -1,0 +1,2 @@
+php artisan --version
+pause
