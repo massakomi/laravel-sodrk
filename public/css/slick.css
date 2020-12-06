@@ -1,0 +1,191 @@
+@charset "UTF-8";
+/* Slider */
+.slick-slider {
+  margin-top: 20px;
+  position: relative;
+  display: block;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -ms-touch-action: pan-y;
+  touch-action: pan-y;
+  -webkit-tap-highlight-color: transparent; }
+.other_slider.slick-slider{
+  margin-top: 10px;
+  margin-bottom: 8px;
+}
+.other_slider.slick-slider img{
+  height: 255px;
+}
+.slick-list {
+  position: relative;
+  overflow: hidden;
+  display: block;
+  margin: 0;
+  padding: 0; }
+  .slick-list:focus {
+    outline: none; }
+  .slick-loading .slick-list {
+    background: #fff url("./ajax-loader.gif") center center no-repeat; }
+  .slick-list.dragging {
+    cursor: pointer;
+    cursor: hand; }
+
+.slick-slider .slick-track,
+.slick-slider .slick-list {
+  -webkit-transform: translate3d(0, 0, 0);
+  -moz-transform: translate3d(0, 0, 0);
+  -ms-transform: translate3d(0, 0, 0);
+  -o-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0); }
+
+.slick-track {
+  position: relative;
+  left: 0;
+  top: 0;
+  display: block; }
+  .slick-track:before, .slick-track:after {
+    content: "";
+    display: table; }
+  .slick-track:after {
+    clear: both; }
+  .slick-loading .slick-track {
+    visibility: hidden; }
+
+.slick-slide {
+  float: left;
+  min-height: 1px;
+  position: relative;
+  overflow: hidden;
+  display: none; }
+  [dir="rtl"] .slick-slide {
+    float: right; }
+  .slick-slide img {
+    display: block;}
+  .slick-slide.slick-loading img {
+    display: none; }
+  .slick-slide.dragging img {
+    pointer-events: none; }
+  .slick-initialized .slick-slide {
+    display: block; }
+  .slick-loading .slick-slide {
+    visibility: hidden; }
+  .slick-vertical .slick-slide {
+    display: block;
+    height: auto;
+    border: 1px solid transparent; }
+
+
+/* Arrows */
+.slick-prev,
+.slick-next {
+  z-index:1;
+  position: absolute;
+  display: block;
+  height: 40px;
+  width: 40px;
+  line-height: 0;
+  font-size: 0;
+  cursor: pointer;
+  top: 50%;
+  margin-top: -20px;
+  padding: 0;
+  border: 2px solid #fff;
+  outline: none;
+  display: none;
+  -webkit-border-radius: 40px;
+  -moz-border-radius: 40px;
+  border-radius: 40px;
+  -webkit-transition:0.3s linear;
+  -moz-transition:0.3s linear;
+  -ms-transition:0.3s linear;
+  -o-transition:0.3s linear;
+  transition:0.3s linear;
+  background: rgba(25, 25, 25, 0.21) url(../img/btn_wt.png) no-repeat center;
+}
+.slick-prev {
+  -webkit-transform: rotate(180deg);
+  -moz-transform: rotate(180deg);
+  -ms-transform: rotate(180deg);
+  -o-transform: rotate(180deg);
+  transform: rotate(180deg);
+}
+.slick-next:hover, .slick-prev:hover {
+  background-color: #212021;
+}
+
+.slick-prev {
+  left: 25px; }
+
+  
+
+.slick-next {
+  right: 25px; }
+
+  
+
+/* Dots */
+.slick-dots {
+  position: absolute;
+  bottom: 20px;
+  left: 0;
+  width: 100%;
+  list-style: none;
+  display: block;
+  text-align: center;
+  padding: 0;
+   }
+  .slick-dots li {
+    position: relative;
+    display: inline-block;
+    height: 14px;
+    width: 14px;
+    margin: 0 3px;
+    padding: 0;
+    cursor: pointer; }
+    .slick-dots li button {
+      background: #fff;
+      border: 0;
+      display: block;
+      height: 8px;
+      width: 8px;
+      outline: none;
+      padding: 0;
+      line-height: 0;
+      font-size: 0;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      margin: -3px 0 0 -3px;
+      color: transparent;
+      cursor: pointer;
+      -webkit-transition: 0.2s linear;
+      -moz-transition: 0.2s linear;
+      -ms-transition: 0.2s linear;
+      -o-transition: 0.2s linear;
+      transition: 0.2s linear;
+      -webkit-border-radius: 100%;
+      -moz-border-radius: 100%;
+      border-radius: 100%}
+      .slick-dots li button:hover, .slick-dots li button:focus {
+        border: 0;
+        background: #71abfe;
+        outline: none; }
+        
+      
+    .slick-dots li.slick-active button {
+      border: 2px solid #efeeeb;
+      background: none;
+      width: 12px;
+      background: #000;
+      height: 12px;
+      left: 0;
+      top: 0;
+      margin: 2px 2px 0;
+    }
+

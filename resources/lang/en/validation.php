@@ -11,6 +11,19 @@ return [
     | the validator class. Some of these rules have multiple versions such
     | as the size rules. Feel free to tweak each of these messages here.
     |
+
+        $messages = [
+            'required' => ':attribute обязательно',
+            'offer.required' => 'Необходимо ввести хотя бы одно предложение',
+            'min'      => 'Не меньше :min символов',
+            'same'    => ':attribute и :other должны совпадать.',
+            'size'    => ':attribute должен быть равен :size.',
+            'integer'    => ':attribute должна быть числом',
+            'between' => ':attribute должен быть между :min и :max.',
+            'in'      => ':attribute должен иметь один из следующих типов: :values',
+        ];
+
+
     */
 
     'accepted' => 'The :attribute must be accepted.',
@@ -95,7 +108,7 @@ return [
     'numeric' => 'The :attribute must be a number.',
     'present' => 'The :attribute field must be present.',
     'regex' => 'The :attribute format is invalid.',
-    'required' => 'The :attribute field is required.',
+    'required' => 'Поле обязательно для заполнения',
     'required_if' => 'The :attribute field is required when :other is :value.',
     'required_unless' => 'The :attribute field is required unless :other is in :values.',
     'required_with' => 'The :attribute field is required when :values is present.',
@@ -145,6 +158,8 @@ return [
     |
     */
 
-    'attributes' => [],
+    'attributes' => [
+        'name' => 'название'
+    ],
 
 ];
