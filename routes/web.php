@@ -10,30 +10,58 @@
 | contains the "web" middleware group. Now create something great!
 |
 */
-Route::get('/test', 'TestController@test');
+
+Route::pattern('id', '[0-9]+');
 
 Route::get('/', 'PagesController@index');
-Route::get('/about', 'PagesController@about');
+
+// about
+Route::get('/about', 'PagesController@about')->name('about');
+Route::get('/news/{id?}', 'PagesController@news');
+Route::get('/news/{name}', 'PagesController@newsPage')->where('name', '[A-Za-z_\d-]+');
+Route::get('/projects/{id?}', 'PagesController@projects');
+Route::get('/actions/{id?}', 'PagesController@actions');
+Route::any('/contacts/{id?}', 'PagesController@contacts');
+Route::get('/vacancies', 'PagesController@vacancies');
+Route::match(['get', 'post'], '/vacancy/{id}', 'PagesController@vacancy');
+
+// Каталог
 Route::get('/catalog', 'PagesController@catalog');
-Route::any('/contacts', 'PagesController@contacts');
-Route::get('/subscription-service', 'PagesController@subscriptionService');
+Route::get('/catalog/{section}', 'PagesController@catalogSection');
+Route::get('/retail', 'PagesController@retail');
+Route::get('/discount-programm', 'PagesController@discountProgramm');
+Route::get('/retail-payment-delivery', 'PagesController@retailPaymentDelivery');
+Route::get('/certificates', 'PagesController@certificates');
+
+// Корпоративный
+Route::any('/corporate', 'PagesController@corporate');
+Route::any('/clients/{id?}', 'PagesController@clients');
+Route::any('/for-dealers', 'PagesController@forDealers');
+Route::any('/corp-payment-delivery', 'PagesController@corpPaymentDelivery');
+Route::any('/statuses', 'PagesController@statuses');
+Route::any('/corporate/price-list', 'PagesController@corporatePrice');
+
+// 1С
+Route::get('/1C', 'PagesController@c1');
+
+// Сети и системы безопасности
+Route::get('/security', 'PagesController@security');
+Route::match(['get', 'post'], '/request/security/{id?}', 'PagesController@requestSecurity');
+Route::get('/security/services', 'PagesController@securityServices');
+
+// Сервисный центр
 Route::get('/services', 'PagesController@services');
 
-Route::get('/request/form/item-price', function () {
-    return view('form-item-price');
-});
+// Абонентское обслуживание
+Route::get('/subscription-service', 'PagesController@subscriptionService');
+Route::get('/subscription-services/services', 'PagesController@subscriptionServices');
+Route::get('/subscription-services/tariffs', 'PagesController@subscriptionTariffs');
+Route::get('/subscription-service/calc', 'PagesController@subscriptionCalc');
 
-Route::any('/corporate', 'PagesController@corporate');
-Route::any('/clients', 'PagesController@clients');
-Route::any('/clients/{id}', 'PagesController@clients');
+// Формы
+Route::match(['get', 'post'], '/request/form/item-price', 'PagesController@requestItemPrice');
 
-Route::get('/vacancies', 'PagesController@vacancies');
-Route::get('/vacancy/{id}', 'PagesController@vacancy');
-
-
-//Route::get('/category', 'CategoryController@category');
-//Route::post('/category/add', 'CategoryController@categoryAdd');
-
+// Авторизация
 Route::get('cabinet', 'PagesController@cabinet');
 Route::get('cabinet/login', ['as' => 'login', 'uses' => 'Auth\LoginController@showLoginForm']);
 Route::post('cabinet/login', 'Auth\LoginController@login');
@@ -42,3 +70,9 @@ Route::post('cabinet/logout', 'Auth\LoginController@logout');
 Route::get('cabinet/register', ['as' => 'register', 'uses' => 'Auth\RegisterController@showRegistrationForm']);
 Route::post('cabinet/register', 'Auth\RegisterController@register');
 
+
+// Тест
+Route::get('/import', 'ImportController');
+Route::get('/test', 'TestController@test');
+//Route::get('/category', 'CategoryController@category');
+//Route::post('/category/add', 'CategoryController@categoryAdd');

@@ -6,6 +6,11 @@
 
 @section('content')
 
+
+@component('alert')
+    <strong>Ой!</strong> Что-то пошло не так!
+@endcomponent
+
 <!-- main news -->
 <div class="m_news">
     <ul>

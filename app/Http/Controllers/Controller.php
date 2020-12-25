@@ -31,7 +31,7 @@ class Controller extends BaseController
         $path = $request->path();
         /*if ($path == '/' || strpos($path, '/catalog') === 0) {
         	$this->showCatalogMenu = true;
-        }*/
+        }*/ 
 
         return $this->params + [
             'title' => $this->title,
@@ -39,8 +39,39 @@ class Controller extends BaseController
             'breadcrumbs' => $this->makeBreadcrumbs($path),
             'catalogMenu' => $this->makeCatalogMenu(),
             'showCatalogMenu' => $this->showCatalogMenu,
-            'sectionCode' => $this->sectionCode
+            'sectionCode' => $this->sectionCode,
+            'directions' => \App\Clients::$directions
         ];
+    }
+
+/*
+    function addFilter($request, $class) {
+        $data = $class::orderBy('id', 'asc');
+        if ($id) {
+            $data->where('direction', $id);
+        }
+        $totalCount = $data->count();
+        $page = $request->input('page', 1) - 1;
+        $onPage = $request->input('on-page', 5);
+        $this->params ['total'] = $totalCount;
+        $this->params ['page'] = $page;
+        $this->params ['onPage'] = $onPage;
+        $this->params ['countPages'] = ceil($totalCount / $onPage);
+
+        $data->skip($page * $onPage)->take($onPage);
+        $this->params ['data'] = $data->get();
+    }
+*/
+    function addFilter($request, $class) {
+        $data = $class::orderBy('id', 'asc');
+        if ($id) {
+            $data->where('direction', $id);
+        }
+        $onPage = $request->input('on-page', 5);
+        if ($onPage > 5) {
+            $this->params ['onPage'] = $onPage;
+        }
+        $this->params ['data'] = $data->paginate($onPage);
     }
 
     /**
@@ -71,8 +102,11 @@ class Controller extends BaseController
         }
         $breadcrumbs = [
             'Главная' => '/',
-            $this->title => $path
         ];
+        if (!$this->breadcrumbs) {
+            $breadcrumbs [$this->title] = $path;
+        }
+
         foreach ($this->breadcrumbs as $item) {
         	$breadcrumbs [$item['text']] = $item['url'];
         }
@@ -82,7 +116,7 @@ class Controller extends BaseController
     /**
      * {@inheritdoc}
      */
-    public function addBreadcrumb($text)
+    public function addBreadcrumb($text, $url='')
     {
         $this->breadcrumbs []= compact('text', 'url');
     }

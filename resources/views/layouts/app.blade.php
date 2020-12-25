@@ -47,38 +47,24 @@
 	<div class="content">
 		<div class="container" role="main">
 			<!-- header -->
-						<header>
+			<header>
 				<!-- top header -->
-				<div class="row">
+				<div class="row"> 
 					<div class="col-xs-12 col-md-12 col-lg-12">
 						<div class="top_head">
 							<ul>
-								<li><a href="{{ url('/about') }}">О компании</a></li>
-								<li><a href="{{ url('/catalog') }}">Каталог товаров</a></li>
-								<li><a href="{{ url('/vacancies') }}">Вакансии</a></li>
-								<li><a href="/contacts">Контакты</a></li>
-								<li><a href="http://vk.com/sodrk" class="vk" target="_blank"></a></li>
-																								<li>
-																		<p class="t_ph">
-										<i></i>
-										(8212) 21-48-08									</p>
-																											<p class="t_m">
-										<i></i>
-										<a href="mailto:all@sodrk.ru">all@sodrk.ru</a>
-									</p>
-																	</li>
-
-								<li class="t_b pull-right" data-h="/order/cart">
-									<i></i>
-																			<div class="no_link">
-											<span class="count">0</span>
-											0.00											<b></b>
-										</div>
-																	</li>
-								<li class="l_r pull-right">
-									<i></i>
-
-
+								<li><a href="{{ url('/about') }}" {{ $sectionCode == 'about' ? ' class=current' :'' }}>О компании</a></li>
+								<li><a href="{{ url('/catalog') }}" {{ $sectionCode == 'catalog' ? ' class=current' :'' }}>Каталог товаров</a></li>
+								<li><a href="{{ url('/vacancies') }}" {{ $path == 'vacancies' ? ' class=current' :'' }}>Вакансии</a></li>
+								<li><a href="{{ url('/contacts') }}" {{ starts_with($path, 'contacts') ? ' class=current' :'' }}>Контакты</a></li>
+								<li><a href="https://sodrk.ru<?=$_SERVER['REQUEST_URI']?>" target="_blank">sodrk</a></li>
+								<li><p class="t_ph"><i></i>(8212) 21-48-08</p>
+									<p class="t_m"><i></i><a href="mailto:all@sodrk.ru">all@sodrk.ru</a></p>
+								</li>
+								<li class="t_b pull-right" data-h="/order/cart"><i></i>
+									<div class="no_link"><span class="count">0</span>0.00<b></b></div>
+								</li>
+								<li class="l_r pull-right"><i></i>
                                     @guest
 									<a href="/cabinet/login">Вход</a>
 									<span> &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;</span>
@@ -88,8 +74,6 @@
 									<span> &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;</span>
 									<a href="/cabinet/logout">Выход</a>
                                     @endauth
-
-
 								</li>
 							</ul>
 						</div>
@@ -121,12 +105,12 @@
 					</div>
 					<div class="col-xs-12 col-md-9 col-lg-9 t_menu">
 						<ul>
-							<li class="lnk1"><a href="{{ url('/retail') }}"><i></i>Розничная<br>торговля</a></li>
-							<li class="lnk2"><a href="{{ url('/corporate') }}"><i></i>Корпоративный<br>отдел</a></li>
-							<li class="lnk3"><a href="{{ url('/1C') }}" class="_1c"><i></i></a></li>
-							<li class="lnk4"><a href="{{ url('/security') }}"><i></i>Сети и системы<br>безопасности</a></li>
-							<li class="lnk5"><a href="{{ url('/services') }}"><i></i>Сервисный<br>центр</a></li>
-							<li class="lnk6 pull-right"><a href="{{ url('/subscription-service') }}"><i></i>Абонентское<br>обслуживание</a></li>
+							<li class="lnk1"><a href="{{ url('/retail') }}" {{ $sectionCode == 'retail' ? ' class=current' :'' }}><i></i>Розничная<br>торговля</a></li>
+							<li class="lnk2"><a href="{{ url('/corporate') }}" {{ $sectionCode == 'corporate' ? ' class=current' :'' }}><i></i>Корпоративный<br>отдел</a></li>
+							<li class="lnk3"><a href="{{ url('/1C') }}" class="_1c{{ $path == '1C' ? ' current' :'' }}"><i></i></a></li>
+							<li class="lnk4"><a href="{{ url('/security') }}" {{ $path == 'security' ? ' class=current' :'' }}><i></i>Сети и системы<br>безопасности</a></li>
+							<li class="lnk5"><a href="{{ url('/services') }}" {{ $path == 'services' ? ' class=current' :'' }}><i></i>Сервисный<br>центр</a></li>
+							<li class="lnk6 pull-right"><a href="{{ url('/subscription-service') }}" {{ $path == 'subscription-service' ? ' class=current' :'' }}><i></i>Абонентское<br>обслуживание</a></li>
 						</ul>
 					</div>
 				</div>
@@ -137,80 +121,101 @@
 
 			</header>			<!-- header end -->
 
-                @if ($path != '/')
-                @include('breadcrumbs')
-                @endif
+                @includeWhen($path != '/', 'breadcrumbs')
 
 				<div class="row">
 
 				<!-- left column -->
 				<div class="col-xs-12 col-md-3 col-lg-3">
 
+					{{-- Blade comment --}}
                     @if ($sectionCode == 'corporate')
-                    <div class="l_links">
-                        <p class="l_head">Также в разделе</p>
-                        <a href="/clients/2"><i></i>Наши клиенты</a>
-                        <a href="/for-dealers"><i></i>Для дилеров</a>
-                        <a href="/corp-payment-delivery"><i></i>Оплата и доставка</a>
-                        <a href="/statuses"><i></i>Статусы компании</a>
-                        <a href="/contacts/2"><i></i>Контакты</a>
-                    </div>
+					@include('menu', ['data' => $menu ['corporate']])
                     <a href="/corporate/price-list" class="btn_price"><i></i>Прайс<br>листы</a>
                     @endif
 
                     @if ($sectionCode == 'subscription-service')
-                    <div class="l_catalog_sec">
-                        <p class="l_head">Также в разделе</p>
-                        <ul>
-                        <li><a href="/subscription-services/services"><i></i>Об услуге</a></li>
-                        <li><a href="/subscription-services/tariffs"><i></i>Тарифные планы</a></li>
-                        <li><a href="/projects/6"><i></i>Наши проекты</a></li>
-                        <li><a href="http://servicedesk.sodrk.ru/" target="_blank" rel="nofollow"><i></i>Service Desk <b></b></a></li>
-                        </ul>
-                    </div>
+					@include('menu', ['data' => $menu ['subscription-service'], 'class' => 'l_catalog_sec'])
                     <a href="/subscription-service/calc" class="btn_calc"><i></i>Рассчитать<br> стоимость</a>
                     @endif
 
                     @if ($sectionCode == 'about')
-                    <div class="l_links">
-						<p class="l_head">О компании</p>
-						<a href="/news"><i></i>Новости</a>
-						<a href="/projects"><i></i>Проекты</a>
-						<a href="/actions"><i></i>Акции</a>
-						<a href="/clients"><i></i>Клиенты</a>
-					</div>
+					@include('menu', ['data' => $menu ['about']])
+                    @endif
+
+                    @if ($sectionCode == 'retail')
+					@include('menu', ['data' => $menu ['retail']])
+                    <a href="javascript:;" data-h="/request/form/item-price" class="btn_cont open_p blue"><i></i>В каталоге нет, <br> но мне нужен...</a>
+                    <a href="/certificates" class="btn_sert"><i></i>Подарочные <br>сертификаты</a>
                     @endif
 
                     @if ($sectionCode == 'contacts')
-                    <div class="l_links">
-                        <p class="l_head">Контакты</p>
-                        <a href="/contacts/1"><i></i>Розничная торговля</a>
-                        <a href="/contacts/2"><i></i>Корпоративный отдел</a>
-                        <a href="/contacts/3"><i></i>1С</a>
-                        <a href="/contacts/4"><i></i>Сети и системы безопасности</a>
-                        <a href="/contacts/5"><i></i>Сервисный центр</a>
-                        <a href="/contacts/6"><i></i>Абонентское обслуживание</a>
-                    </div>
+					@include('menu', ['data' => $menu ['contacts']])
                     @endif
 
                     @if ($sectionCode == 'services')
-                    <div class="l_links">
-                    <p class="l_head">Также в разделе</p>
-                    <a href="/services/services"><i></i>Услуги</a>
-                    <a href="/contacts/5"><i></i>Сервисные центры</a>
-                    <a href="/services/catalog"><i></i>Каталог услуг</a>
-                    <a href="/services/conditions-repaire"><i></i>Условия ремонта</a>
-                    <a href="/services/people"><i></i>Наши специалисты</a>
-                    <a href="/services/vendors"><i></i>Авторизации</a>
-                    <a href="/clients/5"><i></i>Клиенты</a>
-                    <a href="/request/services"><i></i>Оформление заявки</a>
-                    <a href="/list"><i></i>Информация</a>
-                    </div>
-
+					@include('menu', ['data' => $menu ['services']])
                     <a href="javascript:;" class="btn_calc open_p blue" data-h="/request/form/service-price"><i></i>Сколько будет <br /> стоить ремонт...</a>
 					<a href="/services/check" class="btn_receipt"><i></i>Проверка <br>квитанции</a>
                     @endif
 
+                    @if ($sectionCode == 'security')
+					<div class="l_links">
+					<p class="l_head">Также в разделе</p>
+					<a href="/projects/4"><i></i>Проекты</a>
+					<a href="/security/services"><i></i>Услуги</a>
+					<a href="/contacts/4"><i></i>Контакты</a>
+					<a href="/request/security"><i></i>Оформление заявки</a>
+					<a href="/security/solutions"><i></i>Решения</a>
+					</div>
+					<div class="l_catalog_sec">
+					<p class="l_head">Коммуникационное оборудование</p>
+					<ul>
+					<li><a href="/catalog/atc"><i></i>ATC</a></li>
+					<li><a href="/catalog/oborudovanie-beward"><i></i>Оборудование BEWARD</a></li>
+					</ul>
+					</div>
+                    @endif
+
+                    @if ($sectionCode == '1c')
+					<div class="catalog_filter">
+					   <div class="l_catalog_sec">
+					      <p class="l_head">Также в разделе</p>
+					      <ul>
+					         <li><a href="/about-as-1c-partner"><i></i>О нас, как о партнере 1С</a></li>
+					         <li><a href="/is-1c-its"><i></i>Информационная система 1С:ИТС </a></li>
+					         <li><a href="/1c-complex-support"><i></i>Комплексное сопровождение 1С</a></li>
+					         <li><a href="/1c-update"><i></i>Обновление 1С</a></li>
+					         <li><a href="/1C/tariffs"><i></i>Тарифные планы</a></li>
+					         <li><a href="/1C/services"><i></i>Сервисы 1С</a></li>
+					         <li><a href="/trades-automation"><i></i>Автоматизация торговли</a></li>
+					         <li><a href="/1C/competentions"><i></i>Компетенции</a></li>
+					         <li><a href="/projects/3"><i></i>Проекты</a></li>
+					         <li><a href="/clients/3"><i></i>Наши клиенты</a></li>
+					         <li><a href="/request/1C"><i></i>Оформление заявки</a></li>
+					         <li><a href="/contacts/3"><i></i>Контакты</a></li>
+					         <li><a href="/1C/settings"><i></i>Настройка и доработка 1С</a></li>
+					         <li><a href="/1C/articles"><i></i>Статьи про 1С</a></li>
+					      </ul>
+					   </div>
+					   <a href="/request/1C" class="mk_app"><i></i>Оформление<br> заявки</a>
+					   <div class="l_catalog_sec">
+					      <p class="l_head">Программное обеспечение "1С:Предприятие 8"</p>
+					      <ul>
+					         <li><a href="/items/5-1-1-buhgalteriya"><i></i>Бухгалтерия</a></li>
+					         <li><a href="/items/5-1-7-1c-predpriyatie-8-dop-licenzii"><i></i>1C: Предприятие 8  Доп. лицензии</a></li>
+					         <li><a href="/items/5-1-2-zarplata-i-kadry"><i></i>Зарплата и кадры</a></li>
+					         <li><a href="/items/5-1-3-torgovlya"><i></i>Торговля</a></li>
+					         <li><a href="/items/5-1-5-raznoe"><i></i>Разное</a></li>
+					         <li><a href="/items/5-1-6-otraslevye-resheniya"><i></i>Отраслевые решения</a></li>
+					         <li><a href="/items/5-1-10-versii-dlya-obucheniya-v8"><i></i>Версии для обучения V8</a></li>
+					         <li><a href="/items/5-1-12-literatura"><i></i>Литература</a></li>
+					         <li><a href="/items/upgrade-s-7-7-na-8-0"><i></i>UPGRADE с 7.7 на 8.0</a></li>
+					         <li><a href="/items/5-1-13-its"><i></i>ИТС</a></li>
+					      </ul>
+					   </div>
+					</div>
+                    @endif
 
                     @if ($showCatalogMenu)
                     <div class="l_catalog">
@@ -272,14 +277,9 @@
 									<p><a href="/retail-payment-delivery">Оплата и доставка</a></p>
 									<p><a href="/contacts/1">Наши магазины</a></p>
 								</div>
-								<div class="f_link">
-									<p class="hd">Корпоративный<br>отдел</p>
-									<p><a href="/clients/2">Наши клиенты</a></p>
-									<p><a href="/for-dealers">Для дилеров</a></p>
-									<p><a href="/corp-payment-delivery">Оплата и доставка</a></p>
-									<p><a href="/statuses">Статусы компании</a></p>
-									<p><a href="/contacts/2">Контакты</a></p>
-								</div>
+
+								@include('layouts.menu', ['data' => $menu ['corporate'], 'head' => 'Корпоративный<br>отдел'])
+
 								<div class="f_link">
 									<p class="hd">1С</p>
 									<p><a href="/1C/services">Каталог услуг</a></p>
@@ -337,7 +337,7 @@
 	<script src="/js/jquery.ezmark.js"></script>
 	<script src="/js/slick.min.js"></script>
 
-    <script src="{{ asset('js/jquery-ready.js?20190926') }}"></script>
+    <script src="{{ asset('js/main.js') }}"></script>
 
 	<!-- Prompt IE 6 users to install Chrome Frame. Remove this if you want to support IE 6.
 		chromium.org/developers/how-tos/chrome-frame-getting-started -->

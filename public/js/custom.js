@@ -6,9 +6,9 @@ app.init = function() {
     $('textarea').keyup(app.formconfig)
     $('textarea').each(app.formconfig)
 
+    // Форма добавления категори category/add
     $('#add-form').find('#validatedGeneralFiles').on('change', app.browse);
-
-    $('form').submit(function (e) {
+    $('#add-form').submit(function (e) {
         e.preventDefault()
         app.loading()
         app.save(this)

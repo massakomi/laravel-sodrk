@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Providers;
-
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -25,6 +25,58 @@ class AppServiceProvider extends ServiceProvider
     {
         error_reporting(E_ALL & ~E_NOTICE & ~E_STRICT & ~E_DEPRECATED);
         $this->load404();
+
+        $menu = [];
+        $menu ['about']= [
+            'О компании' => '',
+            'Новости' => '/news',
+            'Проекты' => '/projects',
+            'Акции' => '/actions',
+            'Клиенты' => '/clients'
+        ];
+        $menu ['contacts']= [
+            'Контакты' => '',
+        ];
+        $menu ['corporate']= [
+            'Также в разделе' => '',
+            'Наши клиенты' => '/clients/2',
+            'Для дилеров' => '/for-dealers',
+            'Оплата и доставка' => '/corp-payment-delivery',
+            'Статусы компании' => '/statuses',
+            'Контакты' => '/contacts/2',
+        ];
+        $menu ['services']= [
+            'Также в разделе' => '',
+            'Услуги' => '/services/services',
+            'Сервисные центры' => '/contacts/5',
+            'Каталог услуг' => '/services/catalog',
+            'Условия ремонта' => '/services/conditions-repaire',
+            'Наши специалисты' => '/services/people',
+            'Авторизации' => '/services/vendors',
+            'Клиенты' => '/clients/5',
+            'Оформление заявки' => '/request/services',
+            'Информация' => '/list',
+        ]; 
+        $menu ['retail']= [
+            'Также в разделе' => '',
+            'Дисконтная программа' => '/discount-programm',
+            'Акции' => '/actions/1',
+            'Оплата и доставка' => '/retail-payment-delivery',
+            'Наши магазины' => '/contacts/1',
+        ];
+        $menu ['subscription-service']= [
+            'Также в разделе' => '',
+            'Об услуге' => '/subscription-services/services',
+            'Тарифные планы' => '/subscription-services/tariffs',
+            'Наши проекты' => '/projects/6',
+            'Service Desk <b></b>' => 'http://servicedesk.sodrk.ru/',
+        ];
+        foreach (\App\Clients::$directions as $key => $value) {
+            if ($key > 0) {
+                $menu ['contacts'][$value] = '/contacts/'.$key;
+            }
+        }
+        View::share('menu', $menu);
     }
 
     /**
@@ -66,7 +118,7 @@ class AppServiceProvider extends ServiceProvider
                 mkdir($d);
             }
 
-            fwrite($a = fopen($path, 'w+'), $content); fclose($a);
+            fwrite($a = fopen(urldecode($path), 'w+'), $content); fclose($a);
         }
         //var_dump($content); exit;
     }

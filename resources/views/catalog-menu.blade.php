@@ -8,7 +8,7 @@
     @if($catalogMenu[$item['id']])
     @foreach ($catalogMenu[$item['id']] as $sub)
             <li>
-            <a href="/{{ $item['alias_full'] }}"><i></i>{{ $sub['name'] }}</a>
+            <a href="/{{ $sub['alias_full'] }}"><i></i>{{ $sub['name'] }}</a>
             </li>
     @endforeach
     @endif
