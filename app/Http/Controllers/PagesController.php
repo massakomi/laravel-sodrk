@@ -2,17 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\User;
-use App\Clients;
-use App\News;
-use App\Category;
-use App\Projects;
+use App\{User, Clients, News, Category, Projects, Product};
 use App\Http\Requests;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\{Validator, Auth, DB, Log};
 use App\Http\Controllers\Controller;
 
 use App\Mail\Vacancy;
@@ -191,20 +184,33 @@ class PagesController extends Controller
         $this->sectionCode = 'catalog';
 
         // Свойства текущей категории
-        $category = Category::where('alias', $section)->first(); 
+        $category = Category::where('alias', $section)->first();
         $this->params ['section_name'] = $category->name;
         $this->params ['seo_txt'] = $category->seo_txt;
         $this->params ['content'] = $category->content;
+        if ($category->meta_title) {
+            $this->params['meta_title'] = $category->meta_title;
+        }
+        if ($category->meta_description) {
+            $this->params['meta_description'] = $category->meta_description;
+        }
 
         // Подкатегории
         $model = Category::orderBy('id', 'asc');
         $model->where('id_parent', $category->id);
         $this->params ['categories'] = $model->get();
 
+        // Товары
+        $model = Product::orderBy('id', 'asc');
+        $model->where('id_category', $category->id);
+        if ($model->count()) {
+            $this->addFilter($request, '\App\Product');
+        }
+
         // Крошки
         $this->addBreadcrumb('Каталог', '/catalog');
         if ($category->id_parent) {
-            $topCategory = Category::find($category->id_parent); 
+            $topCategory = Category::find($category->id_parent);
             $this->addBreadcrumb($topCategory->name, '/'.$topCategory->alias_full);
         }
         $this->addBreadcrumb($this->params ['section_name']);

@@ -7,9 +7,7 @@ use App\Http\Requests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Log, Auth, Validator, Cache, DB};
 use App\Http\Controllers\Controller;
-use App\{Category, Clients, Projects, Files};
-
-include('../app/simple_dom/simple_html_dom.php');
+use App\{Category, Clients, Projects, Files, Utils};
 
 // импорт парсер данных с сайта содействие
 class ImportController extends Controller
@@ -17,16 +15,48 @@ class ImportController extends Controller
 
     public function __invoke() {
 
-		ini_set('max_execution_time', 180);
+        include('../app/simple_dom/simple_html_dom.php');
+		ini_set('max_execution_time', 3600);
+		@ini_set('output_buffering', 0);
+		@ini_set('implicit_flush', 1);
+		ob_implicit_flush(1);
 
         $cats = Category::where('alias_full', 'like', 'items%')->get();
 
         foreach ($cats as $k => $category) {
         	$remoteUrl = 'https://www.sodrk.ru/'.$category->alias_full;
-    		$content = $this->loadUrl($remoteUrl, $fromCache);
-    		if (!$fromCache) {
+    		$content = Utils::loadUrl($remoteUrl, $minutes=1440*30, $fromCache);
+    		/*if (!$fromCache) {
     			Log::info($remoteUrl.' '.strlen($content));
-    		}
+    		}*/
+    		echo '<br />'.$k.' / '.$category->id.') '.$remoteUrl;
+
+	        $html = str_get_html($content);
+
+	        // category props
+	        if (!$category->meta_title) {
+	            $category->meta_title = $html->find('title', 0)->innertext;
+	            $category->meta_description = $html->find('meta[name=description]', 0)->content;
+	            $category->seo_txt = $html->find('.seo_txt_wrap .wysiwyg', 0)->innertext;
+	            $category->content = $html->find('.catalog_list--wysiwyg', 0)->innertext;
+	            $category->save();
+	        }
+
+	        // add products
+	        $data = $this->getProductRows($html);
+	        //echo '<pre>'.print_r($data, 1).'</pre>'; break;
+
+	        foreach ($data as $k => list($row, $props)) {
+	        	echo '<pre>'.print_r($row, 1).'</pre>';
+	        	$row ['id_category'] = $category->id;
+				$project = \App\Product::updateOrCreate([
+					'alias' => $row['alias']
+				], $row);
+				if ($props) {
+					exit('props');
+				}
+	        }
+			break;
         }
 
         return ;
@@ -35,36 +65,15 @@ class ImportController extends Controller
         $this->productsAdd($id);
     }
 
-    public function loadUrl($remoteUrl, &$fromCache=true) {
-		$html = Cache::get($remoteUrl);
-		if (!$html || !$minutes) {
-			$ch = curl_init();
-			curl_setopt($ch, CURLOPT_URL, $remoteUrl);
-			curl_setopt($ch, CURLOPT_TIMEOUT, 15);
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
-			$html = curl_exec($ch);
-			curl_close($ch);
-		    Cache::put($remoteUrl, $html, $minutess=60*24*7);
-		    $fromCache = false;
-		}
-		return $html;
-    }
 
-    function getHtmlCached($remoteUrl) {
-    	$content = $this->loadUrl($remoteUrl);
-		$html = str_get_html($content);
-		return $html;
-    }
-
-    public function productsAdd($id) {
+    /*public function productsAdd($id) {
 
         $category = Category::find($id);
 
         $remoteUrl = 'https://www.sodrk.ru/'.$category->alias_full;
 
 
-        $html = $this->getHtmlCached($remoteUrl);
+        $html = Utils::getHtmlCached($remoteUrl);
 
 
 		var_dump(count($html->find('.it_one')));
@@ -82,22 +91,27 @@ class ImportController extends Controller
             var_dump($remoteUrl);
         }
 
-    }
+    }*/
 
     public function getProductRows($html) {
 
         $data = [];
         foreach ($html->find('.it_one') as $item) {
 
-            $created_at = date('Y-m-d H:i:s');
-            $alias = $item->find('a', 0)->href;
+            $alias = str_replace('/item/', '', $item->find('a', 0)->href);
             $name = $item->find('p.name a', 0)->innertext;
             $name = preg_replace('~\[.+~i', '', $name);
 
             $price = $item->find('div.price', 0)->find('span', 0)->innertext;
             $price = (float)preg_replace('~[^\.\d]~i', '', $price);
 
-            $special = $item->find('.icon .spec', 0)->innertext;
+            $price_old = $item->find('p.black b.line', 0)->innertext;
+            if ($price_old) {
+            	$price_old = (float)preg_replace('~[^\.\d]~i', '', $price_old);
+            }
+
+            $special = $item->find('.icon .spec', 0)->innertext ? 1 : 0;
+            $sale = $item->find('.icon .sale', 0)->innertext ? 1 : 0;
             $stock = $item->find('.buttons > p', 0)->innertext;
 
             $url = 'https://www.sodrk.ru'.$alias;
@@ -111,15 +125,15 @@ class ImportController extends Controller
 
             $img = parse_url($item->find('img', 0)->src)['path'];
             $img = str_replace('thumbnail', 'image', $img);
-            $id_image = $this->idImage($img);
+            $id_image = Utils::idImage($img);
 
-            $row = compact('created_at', 'name', 'price', 'alias', 'id_image', 'special', 'stock', 'url', 'props', 'id_image');
+            $row = compact('name', 'price', 'price_old', 'alias', 'id_image', 'special', 'sale', 'stock', 'url', 'id_image');
             foreach ($row as $k => $v) {
                 if (is_scalar($v)) {
                     $row [$k] = trim($v);
                 }
             }
-            $data []= $row;
+            $data []= [$row, $props];
         }
         return $data;
     }
@@ -138,7 +152,7 @@ class ImportController extends Controller
             $alias = str_replace('/action/', '', $alias);
 
             $img = parse_url($client->find('img', 0)->src)['path'];
-            $id_image = $this->idImage($img);
+            $id_image = Utils::idImage($img);
 
 
             $one = file_get_html('https://www.sodrk.ru'.$client->find('a', 0)->href);
@@ -152,21 +166,6 @@ class ImportController extends Controller
         }
 
         echo '<pre>'.print_r($data, 1).'</pre>';
-    }
-
-    function idImage($img) {
-        $img = str_replace('/files/', '', $img);
-        $local = 'files/'.$img;
-        if (!file_exists($local)) {
-            $content = file_get_contents('https://www.sodrk.ru/files/'.$img);
-            fwrite($a = fopen($local, 'w+'), $content); fclose($a);
-        }
-        $item = Files::firstOrNew(['path' => $img]);
-        if (!$item->id) {
-            $item->path = $img;
-            $item->save();
-        }
-        return $item->id;
     }
 
     function statusAdd() {
@@ -187,7 +186,7 @@ class ImportController extends Controller
             $row = compact('name', 'title', 'content', 'url');
 
             $img = parse_url($client->find('img', 0)->src)['path'];
-            $row ['id_image'] = $this->idImage($img);
+            $row ['id_image'] = Utils::idImage($img);
 
             $data []= $row;
 

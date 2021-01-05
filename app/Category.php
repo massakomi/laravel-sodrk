@@ -16,6 +16,28 @@ class Category extends Model
 
     protected $fillable = ['name'];
 
+   /**
+     *
+     *
+     * @param  string  $value
+     * @return void
+     */
+    public function setSeoTxtAttribute($value)
+    {
+        $this->attributes['seo_txt'] = trim($value);
+    }
+
+   /**
+     *
+     *
+     * @param  string  $value
+     * @return void
+     */
+    public function setContentAttribute($value)
+    {
+        $this->attributes['content'] = trim($value);
+    }
+
     /**
     * Получить
     */

@@ -31,7 +31,7 @@ class Controller extends BaseController
         $path = $request->path();
         /*if ($path == '/' || strpos($path, '/catalog') === 0) {
         	$this->showCatalogMenu = true;
-        }*/ 
+        }*/
 
         return $this->params + [
             'title' => $this->title,
@@ -63,7 +63,11 @@ class Controller extends BaseController
     }
 */
     function addFilter($request, $class) {
-        $data = $class::orderBy('id', 'asc');
+        if (method_exists($class, 'getData')) {
+            $data = $class::getData($request);
+        } else {
+            $data = $class::orderBy('id', 'asc');
+        }
         if ($id) {
             $data->where('direction', $id);
         }

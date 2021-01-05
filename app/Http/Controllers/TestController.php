@@ -5,14 +5,9 @@ namespace App\Http\Controllers;
 use App\User;
 use App\Http\Requests;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\{Validator, Auth, DB};
 use App\Http\Controllers\Controller;
-use App\Category;
-use App\Clients;
-use App\Projects;
-use App\Files;
+use App\{Category, Clients, Project, Files, News, Statuses};
 
 use App\Mail\OrderShipped;
 use Illuminate\Support\Facades\Mail;
@@ -26,7 +21,11 @@ class TestController extends Controller
      */
     public function test()
     {
-         $this->laravelTest();
+ 		
+		$string = 'Laravel';
+		$array = array_wrap($string, ['xxx']);
+		echo '<pre>'.print_r($array, 1).'</pre>';
+ 
     }
 
 
