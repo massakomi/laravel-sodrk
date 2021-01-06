@@ -29,6 +29,8 @@
     <link href="{{ asset('css/iview.css') }}" rel="stylesheet">
     <link href="{{ asset('css/slick.css') }}" rel="stylesheet">
     <link href="{{ asset('css/chosen.css') }}" rel="stylesheet">
+    <link href="{{ asset('fancybox/jquery.fancybox.css') }}" rel="stylesheet">
+    <link href="{{ asset('fancybox/helpers/jquery.fancybox-thumbs.css') }}" rel="stylesheet">
     <link href="{{ asset('css/screen.css') }}" rel="stylesheet">
 
 	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
@@ -38,7 +40,19 @@
 
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
-
+    <style>
+    	.l_catalog a:not(.open) + ul.sub {display:none;}
+    </style>
+    @yield('styles')
+	<script>
+	$(function() {
+	    $.ajaxSetup({
+	        headers: {
+	        'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content')
+	        }
+	    });
+	});
+	</script>
 </head>
 
 <body>
@@ -49,7 +63,7 @@
 			<!-- header -->
 			<header>
 				<!-- top header -->
-				<div class="row"> 
+				<div class="row">
 					<div class="col-xs-12 col-md-12 col-lg-12">
 						<div class="top_head">
 							<ul>
@@ -225,6 +239,10 @@
                     <a href="javascript:;" data-h="/request/form/item-price" class="btn_cont open_p blue"><i></i>В каталоге нет, <br> но мне нужен...</a>
                     @endif
 
+                    @if ($sectionCode == 'filter')
+						@include('layouts.smart')
+                    @endif
+
 					<p class="l_head2">Мы на связи</p>
 					<a href="/contacts#form" class="write_us"><i></i>Напишите нам</a>
 				</div>
@@ -336,6 +354,8 @@
 	<script src="/js/jquery-ui.min.js"></script>
 	<script src="/js/jquery.ezmark.js"></script>
 	<script src="/js/slick.min.js"></script>
+	<script src="/fancybox/jquery.fancybox.js"></script>
+	<script src="/fancybox/helpers/jquery.fancybox-thumbs.js"></script>
 
     <script src="{{ asset('js/main.js') }}"></script>
 

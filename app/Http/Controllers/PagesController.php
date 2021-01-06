@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\{User, Clients, News, Category, Projects, Product};
+use App\{User, Clients, News, Category, Projects, Product, Vacancy as Vac, Info};
 use App\Http\Requests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Validator, Auth, DB, Log};
@@ -35,9 +35,14 @@ class PagesController extends Controller
         $this->sectionCode = 'about';
         return view('about/'.__FUNCTION__, $this->prepare($request));
     }
-
-    //@if (in_array($path, ['about', 'news', 'projects', 'actions', 'clients']))
-
+    /**
+     * {@inheritdoc}
+     */
+    public function sitemap(Request $request)
+    {
+        $this->title = 'Карта сайта';
+        return view('about/'.__FUNCTION__, $this->prepare($request));
+    }
     /**
      * {@inheritdoc}
      */
@@ -45,7 +50,7 @@ class PagesController extends Controller
     {
         $this->title = 'Новости';
         $this->sectionCode = 'about';
-        $this->addFilter($request, '\App\News');
+        $this->addFilter($request, '\App\News', compact('id'));
         $this->params ['directionId'] = $id;
         return view('about/'.__FUNCTION__, $this->prepare($request));
     }
@@ -70,7 +75,7 @@ class PagesController extends Controller
     public function actions(Request $request, $id='')
     {
         $this->title = 'Акции';
-        $this->addFilter($request, '\App\Actions');
+        $this->addFilter($request, '\App\Actions', compact('id'));
         $this->sectionCode = 'about';
         $this->params ['directionId'] = $id;
         return view('about/'.__FUNCTION__, $this->prepare($request));
@@ -109,6 +114,7 @@ class PagesController extends Controller
     public function vacancies(Request $request)
     {
         $this->title = 'Вакансии';
+        $this->params ['data'] = Vac::orderBy('id')->get();
         return view('about/'.__FUNCTION__, $this->prepare($request));
     }
     /**
@@ -154,8 +160,32 @@ class PagesController extends Controller
     {
         $this->title = 'Проекты';
         $this->sectionCode = 'about';
-        $this->addFilter($request, '\App\Projects');
+        $this->addFilter($request, '\App\Projects', compact('id'));
         $this->params ['directionId'] = $id;
+        return view('about/'.__FUNCTION__, $this->prepare($request));
+    }
+    /**
+     * {@inheritdoc}
+     */
+    public function info(Request $request)
+    {
+        $this->title = 'Полезная информация';
+        //$this->sectionCode = 'about';
+        $this->addFilter($request, '\App\Info', compact('id'));
+        return view('about/'.__FUNCTION__, $this->prepare($request));
+    }
+    /**
+     * {@inheritdoc}
+     */
+    public function infoPage(Request $request, $alias)
+    {
+        $this->params ['item'] = Info::where('alias', $alias)->first();
+        if (!$this->params ['item']) {
+            abort(404);
+        }
+        $this->addBreadcrumb('Полезная информация', '/info-list');
+        $this->title = $this->params ['item']->name;
+        $this->addBreadcrumb($this->params ['item']->name);
         return view('about/'.__FUNCTION__, $this->prepare($request));
     }
 
@@ -188,6 +218,7 @@ class PagesController extends Controller
         $this->params ['section_name'] = $category->name;
         $this->params ['seo_txt'] = $category->seo_txt;
         $this->params ['content'] = $category->content;
+        $this->params ['alias_full'] = $category->alias_full;
         if ($category->meta_title) {
             $this->params['meta_title'] = $category->meta_title;
         }
@@ -195,27 +226,127 @@ class PagesController extends Controller
             $this->params['meta_description'] = $category->meta_description;
         }
 
+        // Стат по количеству
+        $stat = [];
+        $a = \Illuminate\Support\Facades\DB::select('SELECT count(*) as c, id_category FROM sod_product WHERE id_category IN (SELECT id FROM sod_category WHERE id_parent=?) GROUP BY 2 ', [$category->id]);
+        foreach ($a as $k => $v) {
+            $stat [$v->id_category] = $v->c;
+        }
+
         // Подкатегории
         $model = Category::orderBy('id', 'asc');
         $model->where('id_parent', $category->id);
-        $this->params ['categories'] = $model->get();
+        $cats = $model->get()->toArray();
+        foreach ($cats as $k => $v) {
+            $model = Product::inRandomOrder();
+            $model->where('id_category', $v['id']);
+            $products = $model->skip(0)->take(10)->get();
+            $cats [$k]['projects'] = $products;
+            $cats [$k]['total'] = $stat[$v['id']];
+        }
+        $this->params ['categories'] = $cats;
 
         // Товары
         $model = Product::orderBy('id', 'asc');
         $model->where('id_category', $category->id);
         if ($model->count()) {
-            $this->addFilter($request, '\App\Product');
+            $this->sectionCode = 'filter';
+            $this->showCatalogMenu = false;
+            $this->addFilter($request, '\App\Product', compact('category'));
         }
 
         // Крошки
-        $this->addBreadcrumb('Каталог', '/catalog');
-        if ($category->id_parent) {
-            $topCategory = Category::find($category->id_parent);
-            $this->addBreadcrumb($topCategory->name, '/'.$topCategory->alias_full);
-        }
+        $this->categoryBreadcrumbs($category);
         $this->addBreadcrumb($this->params ['section_name']);
 
         return view('catalog/section', $this->prepare($request));
+    }
+    /**
+     * {@inheritdoc}
+     */
+    public function orderAddToCart(Request $request, Product $product)
+    {
+        $cart = [];
+        if ($request->session()->has('cart')) {
+            $cart = $request->session()->get('cart');
+        }
+        if (!isset($cart [$product->id])) {
+            $cart [$product->id]= $product->toArray();
+            $cart [$product->id]['quantity']= 1;
+        } else {
+            $cart [$product->id]['quantity'] ++;
+        }
+        $total = $sum = 0;
+        foreach ($cart as $k => $v) {
+            $total += $v['quantity'];
+            $sum += $v['quantity'] * $v['price'];
+        }
+        $request->session()->put('cart', $cart);
+        $result = [
+            'r' => 1,
+            'q' => $cart [$product->id]['quantity'],
+            'c' => $total,
+            't' => number_format($sum, 2, '.', ' ')
+        ];
+        echo json_encode($result);
+    }
+    /**
+     * {@inheritdoc}
+     */
+    public function productPage(Request $request, $alias)
+    {
+        $this->sectionCode = 'catalog';
+
+        // Продукт
+        $item = Product::where('alias', $alias)->first();
+        $item->checkAndLoad();
+        $this->params ['item'] = $item;
+        if (!$item) {
+            abort(404);
+        }
+        if ($item->name) {
+            $this->params['meta_title'] = $item->name;
+        }
+
+        // Свойства
+        $propValues = [];
+        if ($item->props) {
+            foreach ($item->props as $k => $v) {
+                $propValues[$v->prop->group][$v->prop->name] = $v->value;
+            }
+        }
+        $this->params ['propValues']= $propValues;
+
+        // Похожие товары 4-5 из той же категории
+        $this->params ['similars'] = Product::where('id_category', $item->id_category)->whereNotIn('id', [$item->id])->inRandomOrder()->skip(0)->take(5)->get();
+
+        // Крошки
+        $this->categoryBreadcrumbs($item->category);
+        $this->addBreadcrumb($item->name);
+
+        return view('catalog/product', $this->prepare($request));
+    }
+    /**
+     * {@inheritdoc}
+     */
+    function categoryBreadcrumbs($category)
+    {
+        $this->params ['categorySelected']= [];
+        $this->addBreadcrumb('Каталог', '/catalog');
+        if ($category->id_parent) {
+            $this->params ['categorySelected'][] = $category->id_parent;
+            $topCategory = Category::find($category->id_parent);
+            if ($topCategory->id_parent) {
+                $this->params ['categorySelected'][] = $topCategory->id_parent;
+                $topTopCategory = Category::find($topCategory->id_parent);
+                $this->addBreadcrumb($topTopCategory->name, '/'.$topTopCategory->alias_full);
+            }
+            $this->addBreadcrumb($topCategory->name, '/'.$topCategory->alias_full);
+        }
+        if ($item->category) {
+            $this->params ['categorySelected'][] = $category->id;
+            $this->addBreadcrumb($category->name, '/'.$category->alias_full);
+        }
     }
     /**
      * {@inheritdoc}

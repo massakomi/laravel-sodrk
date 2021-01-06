@@ -19,27 +19,34 @@ Route::get('/', 'PagesController@index');
 Route::get('/about', 'PagesController@about')->name('about');
 Route::get('/news/{id?}', 'PagesController@news');
 Route::get('/news/{name}', 'PagesController@newsPage')->where('name', '[A-Za-z_\d-]+');
+Route::get('/one-news/{name}', 'PagesController@newsPage')->where('name', '[A-Za-z_\d-]+');
 Route::get('/projects/{id?}', 'PagesController@projects');
 Route::get('/actions/{id?}', 'PagesController@actions');
-Route::any('/contacts/{id?}', 'PagesController@contacts');
+Route::match(['get', 'post'], '/contacts/{id?}', 'PagesController@contacts');
 Route::get('/vacancies', 'PagesController@vacancies');
 Route::match(['get', 'post'], '/vacancy/{id}', 'PagesController@vacancy');
+Route::get('/sitemap', 'PagesController@sitemap')->name('sitemap');
+Route::get('/info-list', 'PagesController@info');
+Route::get('/info/{name}', 'PagesController@infoPage')->where('name', '[A-Za-z_\d-]+');
 
 // Каталог
 Route::get('/catalog', 'PagesController@catalog');
 Route::get('/catalog/{section}', 'PagesController@catalogSection');
+Route::get('/items/{section}', 'PagesController@catalogSection');
+Route::any('/order/add-to-cart/{product}', 'PagesController@orderAddToCart');
+Route::get('/item/{alias}', 'PagesController@productPage');
 Route::get('/retail', 'PagesController@retail');
 Route::get('/discount-programm', 'PagesController@discountProgramm');
 Route::get('/retail-payment-delivery', 'PagesController@retailPaymentDelivery');
 Route::get('/certificates', 'PagesController@certificates');
 
 // Корпоративный
-Route::any('/corporate', 'PagesController@corporate');
-Route::any('/clients/{id?}', 'PagesController@clients');
-Route::any('/for-dealers', 'PagesController@forDealers');
-Route::any('/corp-payment-delivery', 'PagesController@corpPaymentDelivery');
-Route::any('/statuses', 'PagesController@statuses');
-Route::any('/corporate/price-list', 'PagesController@corporatePrice');
+Route::get('/corporate', 'PagesController@corporate');
+Route::get('/clients/{id?}', 'PagesController@clients');
+Route::get('/for-dealers', 'PagesController@forDealers');
+Route::get('/corp-payment-delivery', 'PagesController@corpPaymentDelivery');
+Route::get('/statuses', 'PagesController@statuses');
+Route::get('/corporate/price-list', 'PagesController@corporatePrice');
 
 // 1С
 Route::get('/1C', 'PagesController@c1');

@@ -32,7 +32,10 @@ class Utils
     }
 
      public static function idImage($img) {
-        $img = str_replace('/files/', '', $img);
+        $img = preg_replace('~/?files/~', '', $img);
+        if (!$img) {
+            return false;
+        }
         $local = 'files/'.$img;
         if (!file_exists($local)) {
             $content = file_get_contents('https://www.sodrk.ru/files/'.$img);

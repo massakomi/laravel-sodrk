@@ -7,91 +7,99 @@ use App\Http\Requests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Log, Auth, Validator, Cache, DB};
 use App\Http\Controllers\Controller;
-use App\{Category, Clients, Projects, Files, Utils};
+use App\{Category, Clients, Projects, Files, Utils, Info, ProductProp, ProductPropValue};
 
 // импорт парсер данных с сайта содействие
 class ImportController extends Controller
 {
 
     public function __invoke() {
-
-        include('../app/simple_dom/simple_html_dom.php');
-		ini_set('max_execution_time', 3600);
-		@ini_set('output_buffering', 0);
-		@ini_set('implicit_flush', 1);
-		ob_implicit_flush(1);
-
-        $cats = Category::where('alias_full', 'like', 'items%')->get();
-
-        foreach ($cats as $k => $category) {
-        	$remoteUrl = 'https://www.sodrk.ru/'.$category->alias_full;
-    		$content = Utils::loadUrl($remoteUrl, $minutes=1440*30, $fromCache);
-    		/*if (!$fromCache) {
-    			Log::info($remoteUrl.' '.strlen($content));
-    		}*/
-    		echo '<br />'.$k.' / '.$category->id.') '.$remoteUrl;
-
-	        $html = str_get_html($content);
-
-	        // category props
-	        if (!$category->meta_title) {
-	            $category->meta_title = $html->find('title', 0)->innertext;
-	            $category->meta_description = $html->find('meta[name=description]', 0)->content;
-	            $category->seo_txt = $html->find('.seo_txt_wrap .wysiwyg', 0)->innertext;
-	            $category->content = $html->find('.catalog_list--wysiwyg', 0)->innertext;
-	            $category->save();
-	        }
-
-	        // add products
-	        $data = $this->getProductRows($html);
-	        //echo '<pre>'.print_r($data, 1).'</pre>'; break;
-
-	        foreach ($data as $k => list($row, $props)) {
-	        	echo '<pre>'.print_r($row, 1).'</pre>';
-	        	$row ['id_category'] = $category->id;
-				$project = \App\Product::updateOrCreate([
-					'alias' => $row['alias']
-				], $row);
-				if ($props) {
-					exit('props');
-				}
-	        }
-			break;
-        }
-
-        return ;
-
-        $id = 1741;
-        $this->productsAdd($id);
+        self::importProducts();
     }
 
+    public function importInfo()
+    {
 
-    /*public function productsAdd($id) {
+        include('../app/simple_dom/simple_html_dom.php');
+        $html = Utils::getHtmlCached('https://www.sodrk.ru/info-list');
 
-        $category = Category::find($id);
+        foreach ($html->find('.pr_one') as $client) {
+            $alias = str_replace('/info/', '', $client->find('a', 0)->href);
+            $name = $client->find('p.hd', 0)->innertext;
+            $content = $client->find('p.hd + p', 0)->innertext;
+            $img = parse_url($client->find('img', 0)->src)['path'];
 
+            $img = str_replace('/files/', '', $img);
+            $imageId = Utils::idImage($img);
+
+            $row = [
+                'alias' => $alias,
+                'id_image' => $imageId,
+                'name' => $name,
+                'preview_text' => $content
+            ];
+            $project = Info::firstOrCreate(['alias' => $alias], $row);
+
+        }
+    }
+
+    public function importProducts()
+    {
+
+        include('../app/simple_dom/simple_html_dom.php');
+        ini_set('max_execution_time', 3600);
+        @ini_set('output_buffering', 0);
+        @ini_set('implicit_flush', 1);
+        ob_implicit_flush(1);
+
+        $category = Category::where('alias_full', 'like', $_GET['alias'])->first();
         $remoteUrl = 'https://www.sodrk.ru/'.$category->alias_full;
 
+        while ($remoteUrl) {
+            $content = Utils::loadUrl($remoteUrl, $minutes=1440*30, $fromCache);
+            echo '<br />'.$k.' / '.$category->id.') '.$remoteUrl;
 
-        $html = Utils::getHtmlCached($remoteUrl);
+            $html = str_get_html($content);
 
+            // category props
+            if (!$category->meta_title) {
+                $category->meta_title = $html->find('title', 0)->innertext;
+                $category->meta_description = mb_substr($html->find('meta[name=description]', 0)->content, 0, 250);
+                $category->seo_txt = $html->find('.seo_txt_wrap .wysiwyg', 0)->innertext;
+                $category->content = $html->find('.catalog_list--wysiwyg', 0)->innertext;
+                $category->save();
+            }
 
-		var_dump(count($html->find('.it_one')));
+            // add products
+            $data = $this->getProductRows($html);  var_dump(count($data));
 
+            foreach ($data as $k => list($row, $props)) {
+                $row ['id_category'] = $category->id;
+                //echo '<pre>'.print_r($row, 1).'</pre>'; exit;
+                $product = \App\Product::updateOrCreate([
+                    'alias' => $row['alias']
+                ], $row);
+                if ($props) {
+                    foreach ($props as $param => $value) {
+                        $prop = ProductProp::where('name', $param)->first();
+                        $propValue = ProductPropValue::create([
+                            'id_product' => $product->id,
+                            'id_prop' => $prop->id,
+                            'value' => strip_tags($value)
+                        ]);
+                    }
+                }
+            }
 
-		exit;
-
-        $data = $this->getProductRows($html);
-        echo '<pre>'.print_r($data, 1).'</pre>';
-
-        // пагинация
-        $urlNext = $html->find('.btn_next', 0)->href;
-        if ($urlNext) {
-            $remoteUrl = 'https://www.sodrk.ru'.$urlNext;
-            var_dump($remoteUrl);
+            $urlNext = $html->find('.btn_next', 0)->href;
+            if ($urlNext) {
+                $remoteUrl = 'https://www.sodrk.ru'.$urlNext;
+            } else {
+                break;
+            }
         }
 
-    }*/
+    }
 
     public function getProductRows($html) {
 
@@ -100,7 +108,7 @@ class ImportController extends Controller
 
             $alias = str_replace('/item/', '', $item->find('a', 0)->href);
             $name = $item->find('p.name a', 0)->innertext;
-            $name = preg_replace('~\[.+~i', '', $name);
+            //$name = preg_replace('~\[.+~i', '', $name);
 
             $price = $item->find('div.price', 0)->find('span', 0)->innertext;
             $price = (float)preg_replace('~[^\.\d]~i', '', $price);
@@ -112,6 +120,7 @@ class ImportController extends Controller
 
             $special = $item->find('.icon .spec', 0)->innertext ? 1 : 0;
             $sale = $item->find('.icon .sale', 0)->innertext ? 1 : 0;
+            $credit = $item->find('.catalog_list__credit', 0) ? 1 : 0;
             $stock = $item->find('.buttons > p', 0)->innertext;
 
             $url = 'https://www.sodrk.ru'.$alias;
@@ -120,19 +129,20 @@ class ImportController extends Controller
             foreach ($item->find('tr') as $tr) {
                 $param = $tr->find('td', 0)->innertext;
                 $value = $tr->find('td', 1)->innertext;
-                $props [trim($param)]= trim($value);
+                $props [mb_substr(trim($param), 0, -1)]= trim($value);
             }
 
             $img = parse_url($item->find('img', 0)->src)['path'];
             $img = str_replace('thumbnail', 'image', $img);
             $id_image = Utils::idImage($img);
 
-            $row = compact('name', 'price', 'price_old', 'alias', 'id_image', 'special', 'sale', 'stock', 'url', 'id_image');
+            $row = compact('name', 'price', 'price_old', 'alias', 'id_image', 'special', 'sale', 'stock', 'credit', 'url', 'id_image');
             foreach ($row as $k => $v) {
                 if (is_scalar($v)) {
                     $row [$k] = trim($v);
                 }
             }
+            //echo '<pre>'.print_r($row, 1).'</pre>'; exit;
             $data []= [$row, $props];
         }
         return $data;

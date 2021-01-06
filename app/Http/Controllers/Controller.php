@@ -39,37 +39,27 @@ class Controller extends BaseController
             'breadcrumbs' => $this->makeBreadcrumbs($path),
             'catalogMenu' => $this->makeCatalogMenu(),
             'showCatalogMenu' => $this->showCatalogMenu,
+            'categorySelected' => [],
             'sectionCode' => $this->sectionCode,
             'directions' => \App\Clients::$directions
         ];
     }
 
-/*
-    function addFilter($request, $class) {
-        $data = $class::orderBy('id', 'asc');
-        if ($id) {
-            $data->where('direction', $id);
-        }
-        $totalCount = $data->count();
-        $page = $request->input('page', 1) - 1;
-        $onPage = $request->input('on-page', 5);
-        $this->params ['total'] = $totalCount;
-        $this->params ['page'] = $page;
-        $this->params ['onPage'] = $onPage;
-        $this->params ['countPages'] = ceil($totalCount / $onPage);
-
-        $data->skip($page * $onPage)->take($onPage);
-        $this->params ['data'] = $data->get();
-    }
-*/
-    function addFilter($request, $class) {
+    /**
+     * {@inheritdoc}
+     */
+    function addFilter($request, $class, $where=[]) {
         if (method_exists($class, 'getData')) {
             $data = $class::getData($request);
         } else {
             $data = $class::orderBy('id', 'asc');
         }
-        if ($id) {
-            $data->where('direction', $id);
+        extract($where);
+        if ($direction) {
+            $data->where('direction', $direction);
+        }
+        if ($category) {
+            $data->where('id_category', $category->id);
         }
         $onPage = $request->input('on-page', 5);
         if ($onPage > 5) {
@@ -101,13 +91,10 @@ class Controller extends BaseController
      */
     function makeBreadcrumbs($path)
     {
-        if (!$this->title) {
-            return [];
-        }
         $breadcrumbs = [
             'Главная' => '/',
         ];
-        if (!$this->breadcrumbs) {
+        if (!$this->breadcrumbs && $this->title) {
             $breadcrumbs [$this->title] = $path;
         }
 
