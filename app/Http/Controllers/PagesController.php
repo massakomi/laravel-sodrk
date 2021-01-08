@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\{User, Clients, News, Category, Projects, Product, Vacancy as Vac, Info};
+use App\{User, Clients, News, Category, Projects, Product, Vacancy as Vac, Info, Basket};
 use App\Http\Requests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Validator, Auth, DB, Log};
@@ -266,27 +266,38 @@ class PagesController extends Controller
      */
     public function orderAddToCart(Request $request, Product $product)
     {
-        $cart = [];
-        if ($request->session()->has('cart')) {
-            $cart = $request->session()->get('cart');
-        }
-        if (!isset($cart [$product->id])) {
-            $cart [$product->id]= $product->toArray();
-            $cart [$product->id]['quantity']= 1;
-        } else {
-            $cart [$product->id]['quantity'] ++;
-        }
-        $total = $sum = 0;
-        foreach ($cart as $k => $v) {
-            $total += $v['quantity'];
-            $sum += $v['quantity'] * $v['price'];
-        }
-        $request->session()->put('cart', $cart);
+        $cart = Basket::get();
+        $basket = Basket::addProduct($product);
         $result = [
             'r' => 1,
-            'q' => $cart [$product->id]['quantity'],
-            'c' => $total,
-            't' => number_format($sum, 2, '.', ' ')
+            'q' => 1 + $cart [$product->id]['quantity'],
+            'c' => $basket['total'],
+            't' => $basket['sum']
+        ];
+        echo json_encode($result);
+    }
+    /**
+     * {@inheritdoc}
+     */
+    public function orderCart(Request $request)
+    {
+        $this->title = 'Корзина';
+        $this->sectionCode = 'catalog';
+        $this->params ['cart'] = Basket::get();
+        $this->params ['basket'] = Basket::countSum();
+        return view('catalog/cart', $this->prepare($request));
+    }
+    /**
+     * {@inheritdoc}
+     */
+    public function orderRemove(Request $request, Product $product)
+    {
+        $cart = Basket::get();
+        Basket::removeProduct($product);
+        $basket = Basket::countSum();
+        $result = [
+            'r' => 1,
+            's' => true
         ];
         echo json_encode($result);
     }

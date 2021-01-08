@@ -48,4 +48,23 @@ class Utils
         }
         return $item->id;
     }
+
+    /**
+     * $src ='files/attachment_images/8140_image.jpg';
+     * $previewImg = Utils::preview($src, 300, 300);
+     */
+    public static function preview($src, $w, $h, $bg='fff')
+    {
+        $preview = 'files/preview/'.md5($src.$bg).'-'.$w.'x'.$h.'.jpg';
+        if (!file_exists($preview)) {
+            $im = new \App\Image();
+            //$im->open('files/attachment_images/8140_image.jpg');
+            //$im->open('files/attachment_images/8142_image.jpg');
+            $im->open($src);
+            $im->cropColor($w, $h, $bg);
+            $im->show($quality=70, $preview, $destroy=true);
+        }
+        return $preview;
+    }
 }
+

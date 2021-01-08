@@ -34,6 +34,8 @@ Route::get('/catalog', 'PagesController@catalog');
 Route::get('/catalog/{section}', 'PagesController@catalogSection');
 Route::get('/items/{section}', 'PagesController@catalogSection');
 Route::any('/order/add-to-cart/{product}', 'PagesController@orderAddToCart');
+Route::get('/order/cart', 'PagesController@orderCart');
+Route::any('/order/toggle-item/{product}', 'PagesController@orderRemove');
 Route::get('/item/{alias}', 'PagesController@productPage');
 Route::get('/retail', 'PagesController@retail');
 Route::get('/discount-programm', 'PagesController@discountProgramm');

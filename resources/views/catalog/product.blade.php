@@ -14,8 +14,8 @@
                 <div class="sale"><span>Распродажа</span></div>
                 @endif
             </div>
-            <a href="/files/{{ $item->image['path'] }}?{{ time() }}" class="fancybox" rel="group">
-                <img src="/files/{{ $item->image['path'] }}?{{ time() }}" style="max-width: 370px; max-height: 370px; " alt="{{$item->name}}">
+            <a href="{{ $item->imagePath }}" class="fancybox" rel="group">
+                <img src="{{ $item->imagePreview(370) }}"  alt="{{$item->name}}">
             </a>
             @foreach ($item->imagesAttached as $key => $img)
             <a href="/files/{{ $img->path }}?{{ time() }}" style="display: none;" class="fancybox" rel="group">
@@ -142,27 +142,27 @@
     <div class="category">
         <p class="hd"><a href="">Похожие товары</a></p>
         <ul>
-            @foreach ($similars as $key => $item)
+            @foreach ($similars as $key => $stm)
             <li>
-                <a href="/item/{{ $item->alias }}">
+                <a href="/item/{{ $stm->alias }}">
                     <span class="icon_wrap">
-                        @if ($item->sale)
+                        @if ($istmtem->sale)
                         <i class="sale"><span>Скидка на товар</span></i>
                         @endif
                     </span>
-                    <span class="img"><img src="/files/{{ $item->image['path'] }}?{{ time() }}" alt="" style="max-width: 110px"></span>
-                    <span class="txt">{{ $item->name }}</span>
+                    <span class="img"><img src="/files/{{ $stm->image['path'] }}?{{ time() }}" alt="" style="max-width: 110px"></span>
+                    <span class="txt">{{ $stm->name }}</span>
                 </a>
                 <div class="bsk_info choice">
                     <div class="close"></div> <i></i>
                     <p>Товар в корзине</p> <a href="javascript:void(0)" class="cont close_bsk_info">Продолжить</a> <a href="/order/cart" class="ord">В корзину</a>
                     <div class="clear"></div>
                 </div>
-                <p class="price">{{ $item->priceFormatted }}<i></i></p>
+                <p class="price">{{ $stm->priceFormatted }}<i></i></p>
 
-                <p class="old_price">{{ $item->priceOldFormatted }}</p>
+                <p class="old_price">{{ $stm->priceOldFormatted }}</p>
 
-                <span class="status_wrap"><a href="#" class="add" data-src="/order/add-to-cart/{{ $item->id }}"></a>В наличии</span>
+                <span class="status_wrap"><a href="#" class="add" data-src="/order/add-to-cart/{{ $stm->id }}"></a>В наличии</span>
             </li>
             @endforeach
         </ul>
@@ -172,24 +172,22 @@
 </div>
 
 
-
-
 <script type="application/ld+json">
 {
   "@context": "http://schema.org/",
   "@type": "Product",
   "name": "{{ $item->name }}",
   "image": "https://{{ request()->getHttpHost() }}/files/{{ $item->image['path'] }}",
-  "description": "",
-  "mpn": "4302",
+  "description": "11",
+  "mpn": "{{ $item->mpn }}",
   "brand": {
     "@type": "Brand",
     "name": "{{ $propValues['Общие']['Производитель'] }}"
   },
   "aggregateRating": {
     "@type": "AggregateRating",
-    "ratingValue": "4.9",
-    "reviewCount": "55"
+    "ratingValue": "{{ $item->ratingValue }}",
+    "reviewCount": "{{ $item->reviewCount }}"
   },
   "offers": {
     "@type": "Offer",

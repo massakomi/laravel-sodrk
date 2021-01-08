@@ -44,15 +44,6 @@
     	.l_catalog a:not(.open) + ul.sub {display:none;}
     </style>
     @yield('styles')
-	<script>
-	$(function() {
-	    $.ajaxSetup({
-	        headers: {
-	        'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content')
-	        }
-	    });
-	});
-	</script>
 </head>
 
 <body>
@@ -76,7 +67,15 @@
 									<p class="t_m"><i></i><a href="mailto:all@sodrk.ru">all@sodrk.ru</a></p>
 								</li>
 								<li class="t_b pull-right" data-h="/order/cart"><i></i>
-									<div class="no_link"><span class="count">0</span>0.00<b></b></div>
+									@if ($basket['total'])
+									<a href="/order/cart">
+										<span class="count">{{ $basket['total'] }}</span>{{ $basket['sum'] }}<b></b>
+									</a>
+									@else
+									<div class="no_link">
+										<span class="count">{{ $basket['total'] }}</span>{{ $basket['sum'] }}<b></b>
+									</div>
+									@endif
 								</li>
 								<li class="l_r pull-right"><i></i>
                                     @guest
@@ -365,5 +364,16 @@
 		<script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js"></script>
 		<script>window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})</script>
 	<![endif]-->
+
+
+	<script>
+	$(function() {
+	    $.ajaxSetup({
+	        headers: {
+	        'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content')
+	        }
+	    });
+	});
+	</script>
 </body>
 </html>

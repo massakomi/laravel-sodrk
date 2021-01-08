@@ -6,7 +6,7 @@ use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use App\Category;
+use App\{Category, Basket};
 
 class Controller extends BaseController
 {
@@ -33,8 +33,11 @@ class Controller extends BaseController
         	$this->showCatalogMenu = true;
         }*/
 
+        $basket = Basket::countSum();
+
         return $this->params + [
             'title' => $this->title,
+            'basket' => $basket,
             'path' => $path,
             'breadcrumbs' => $this->makeBreadcrumbs($path),
             'catalogMenu' => $this->makeCatalogMenu(),

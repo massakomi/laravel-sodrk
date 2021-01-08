@@ -14,7 +14,12 @@ class ImportController extends Controller
 {
 
     public function __invoke() {
-        self::importProducts();
+        if ($_GET['alias']) {
+            self::importProducts();
+        }
+
+
+
     }
 
     public function importInfo()

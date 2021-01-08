@@ -61,6 +61,24 @@ class Product extends Model
    /**
     *
     */
+    public function getImagePathAttribute($value)
+    {
+        return '/files/'.$this->image['path'].'?'.time();
+    }
+
+   /**
+    *
+    */
+    public function imagePreview($size, $bg='ffffff')
+    {
+        $src = 'files/'.$this->image['path'];
+        $previewImg = Utils::preview($src, $size, $size, $bg);
+        return '/'.$previewImg.'?'.time();
+    }
+
+   /**
+    *
+    */
     public function getPriceOldFormattedAttribute($value)
     {
         return $this->price_old ? number_format($this->price_old, 2, '.', ' ') : '';
@@ -104,6 +122,12 @@ class Product extends Model
         $this->garanthy = trim($html->find('.garanthy', 0)->innertext);
         $this->text1 = trim($html->find('#con_tab1 .wysiwyg', 0)->innertext);
         $this->text2 = trim($html->find('#con_tab1 .wysiwyg', 1)->innertext);
+
+        $json = $html->find('script[type="application/ld+json"]', 0)->innertext;
+        $json = json_decode($json, true);
+        $this->mpn = $json['mpn'];
+        $this->ratingValue = $json['aggregateRating']['ratingValue'];
+        $this->reviewCount = $json['aggregateRating']['reviewCount'];
 
         // Доп картинки
         if (!count($this->props)) {
@@ -162,14 +186,5 @@ class Product extends Model
             }
         }
 
-        // Похожие
-        /*$similar = [];
-        foreach ($html->find('.category li > a') as $a) {
-            $similar []= str_replace('/item/', '', $a->href);
-        }*/
-
-        //echo '<pre>'.print_r($props, 1).'</pre>';
-
-        // var_dump($remoteUrl); exit;
     }
 }

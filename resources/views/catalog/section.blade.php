@@ -48,7 +48,7 @@
    @foreach ($data as $key => $item)
     <div class="it_one">
         <div class="img">
-            <a href="/item/{{ $item->alias }}"><img src="/files/{{ $item->image['path'] }}?{{ time() }}" style="max-height: 110px; max-width: 110px" alt=""></a>
+            <a href="/item/{{ $item->alias }}"><img src="{{ $item->imagePreview(110) }}" alt=""></a>
         </div>
         <div class="txt">
             <p class="name"><a href="/item/{{ $item->alias }}">{!! $item->name !!}</a></p>
@@ -149,7 +149,7 @@
                             @endif
                         </span>
                         <span class="img">
-                            <img src="/files/{{ $product->image['path'] }}?{{ time() }}" style="max-height: 110px; max-width: 110px" alt="{{ $product->name }}">
+                            <img src="{{ $product->imagePreview(110, 'f6f6f6') }}" alt="{{ $product->name }}">
                         </span>
                         <span class="txt">{{ $product->name }}</span>
                     </a>
